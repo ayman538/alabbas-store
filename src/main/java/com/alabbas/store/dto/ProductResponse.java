@@ -19,6 +19,7 @@ public class ProductResponse {
     private String nameAr;
 
     private String description;
+    private String descriptionAr;
 
     private BigDecimal price;
 

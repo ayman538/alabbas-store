@@ -20,6 +20,7 @@ public class ProductRequest {
     private String nameAr;
 
     private String description;
+    private String descriptionAr;
 
     @NotNull
     private BigDecimal price;

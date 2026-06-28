@@ -35,6 +35,10 @@ public class Product {
     @Column(length = 1000)
     private String description;
 
+    @Size(max = 1000, message = "Description must not exceed 1000 characters")
+    @Column(length = 1000)
+    private String descriptionAr;
+
     @NotNull(message = "Price is required")
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
     @Column(nullable = false)
