@@ -189,9 +189,9 @@ public class ProductService {
                 .map(this::mapToProductResponse);
     }
 
-    public Page<ProductResponse> searchProductsInCategory(String keyword, Long categoryId, Pageable pageable) {
+    public Page<ProductResponse> searchProductsInCategory(String keyword, Long categoryId,Integer stockQuantity,Pageable pageable) {
         return productRepository
-                .searchProductsInCategory(keyword, categoryId, pageable)
+                .searchProductsInCategory(keyword, categoryId,stockQuantity, pageable)
                 .map(this::mapToProductResponse);
 
     }

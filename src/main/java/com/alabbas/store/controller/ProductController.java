@@ -224,12 +224,13 @@ public class ProductController {
 
     @GetMapping("/api/public/products/search/category")
     public Page<ProductResponse> searchProductsInCategory(
-            @RequestParam String q,
+            @RequestParam(required = false) String q,
             @RequestParam Long categoryId,
+            @RequestParam(required = false) Integer stockQuantity,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        return productService.searchProductsInCategory(q,categoryId,pageable);
+        return productService.searchProductsInCategory(q,categoryId,stockQuantity,pageable);
     }
 }

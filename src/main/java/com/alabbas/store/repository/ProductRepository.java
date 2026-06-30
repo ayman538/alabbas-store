@@ -30,15 +30,22 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     Page<Product> searchProducts(@Param("keyword") String keyword, Pageable pageable);
 
     @Query("""
-                SELECT p FROM Product p
-                WHERE p.category.id = :categoryId
-                  AND (
-                       LOWER(p.nameEn) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                    OR LOWER(p.nameAr) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                    OR LOWER(p.sku) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                  )
-            """)
+        SELECT p FROM Product p
+        WHERE p.category.id = :categoryId
+          AND (
+                :keyword IS NULL
+             OR :keyword = ''
+             OR LOWER(p.nameEn) LIKE LOWER(CONCAT('%', :keyword, '%'))
+             OR LOWER(p.nameAr) LIKE LOWER(CONCAT('%', :keyword, '%'))
+             OR LOWER(p.sku) LIKE LOWER(CONCAT('%', :keyword, '%'))
+          )
+          AND (
+                :stockQuantity IS NULL
+             OR p.stockQuantity = :stockQuantity
+          )
+        """)
     Page<Product> searchProductsInCategory(@Param("keyword") String keyword,
                                            @Param("categoryId") Long categoryId,
+                                           @Param("stockQuantity") Integer stockQuantity,
                                            Pageable pageable);
 }
