@@ -1,6 +1,9 @@
 package com.alabbas.store.controller;
 import com.alabbas.store.dto.*;
 import com.alabbas.store.entity.Order;
+import com.alabbas.store.enums.OrderStatus;
+import com.alabbas.store.enums.PaymentMethod;
+import com.alabbas.store.enums.PaymentStatus;
 import com.alabbas.store.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +13,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 
@@ -80,6 +85,38 @@ public class OrderController {
     public List<OrderResponse> getOrdersByCustomerPhone(@RequestParam String phone) {
         return orderService.getOrdersByCustomerPhone(phone);
     }
+
+
+    @GetMapping("/api/public/orders/search")
+    public Page<OrderResponse> searchOrders(
+            @RequestParam(required = false) String customerName,
+            @RequestParam(required = false) String customerPhone,
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) PaymentStatus paymentStatus,
+            @RequestParam(required = false) PaymentMethod paymentMethod,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime createdFrom,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+            LocalDateTime createdTo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        return orderService.searchOrders(
+                customerName,
+                customerPhone,
+                status,
+                paymentStatus,
+                paymentMethod,
+                createdFrom,
+                createdTo,
+                pageable
+        );
+    }
+
     @PatchMapping("/api/public/orders/{id}/pay")
     public ApiResponse payOrder(@PathVariable Long id,
                                 @Valid @RequestBody PayOrderRequest request) {

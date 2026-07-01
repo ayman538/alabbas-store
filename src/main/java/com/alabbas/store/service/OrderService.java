@@ -3,6 +3,8 @@ package com.alabbas.store.service;
 import com.alabbas.store.dto.*;
 import com.alabbas.store.entity.*;
 import com.alabbas.store.enums.OrderItemStatus;
+import com.alabbas.store.enums.OrderStatus;
+import com.alabbas.store.enums.PaymentMethod;
 import com.alabbas.store.enums.PaymentStatus;
 import com.alabbas.store.exception.BusinessException;
 import com.alabbas.store.exception.ResourceNotFoundException;
@@ -15,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.testng.annotations.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -118,7 +121,7 @@ public class OrderService {
     public OrderResponse getOrderDetails(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("order.not.found"));
-       return mapToOrderResponse(order);
+        return mapToOrderResponse(order);
 
     }
 
@@ -160,7 +163,7 @@ public class OrderService {
             order.setDiscountAmount(BigDecimal.ZERO);
             order.setPaymentStatus(PaymentStatus.PARTIALLY_PAID);
 
-        } else if (order.getPaymentStatus()== PaymentStatus.REFUNDED) {
+        } else if (order.getPaymentStatus() == PaymentStatus.REFUNDED) {
             order.setPaymentStatus(PaymentStatus.REFUNDED);
 
         } else {
@@ -223,11 +226,11 @@ public class OrderService {
                 .build();
     }
 
-    public void ChangeItemStatus(Long orderId, Long itemId , ReturnOrderItemRequest request) {
+    public void ChangeItemStatus(Long orderId, Long itemId, ReturnOrderItemRequest request) {
 
         OrderItem item = orderItemRepository.findByIdAndOrderId(itemId, orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("order.item.not.found"));
-        Product product= item.getProduct();
+        Product product = item.getProduct();
 
         int remainingQuantity = item.getQuantity() - item.getReturnedQuantity();
 
@@ -246,6 +249,27 @@ public class OrderService {
         product.setStockQuantity(product.getStockQuantity() + request.getQuantity());
 
         orderItemRepository.save(item);
+    }
+
+    public Page<OrderResponse> searchOrders(
+            String customerName,
+            String customerPhone,
+            OrderStatus status,
+            PaymentStatus paymentStatus,
+            PaymentMethod paymentMethod,
+            LocalDateTime createdFrom,
+            LocalDateTime createdTo,
+            Pageable pageable) {
+        return orderRepository.searchOrders(
+                customerName,
+                customerPhone,
+                status,
+                paymentStatus,
+                paymentMethod,
+                createdFrom,
+                createdTo,
+                pageable
+        ).map(this::mapToOrderResponse);
     }
 }
 
