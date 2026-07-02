@@ -8,9 +8,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -23,13 +21,20 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, Object> handleValidationExceptions(MethodArgumentNotValidException ex, Locale locale) {
+    public Map<String, Object> handleValidationExceptions(
+            MethodArgumentNotValidException ex,
+            Locale locale
+    ) {
         Map<String, Object> response = new HashMap<>();
-        Map<String, String> errors = new HashMap<>();
+        List<Map<String, String>> errors = new ArrayList<>();
 
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-                errors.put(error.getField(), error.getDefaultMessage())
-        );
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            Map<String, String> fieldError = new HashMap<>();
+            fieldError.put("field", error.getField());
+            fieldError.put("message", messageSource.getMessage(error, locale));
+
+            errors.add(fieldError);
+        });
 
         response.put("timestamp", LocalDateTime.now());
         response.put("status", 400);

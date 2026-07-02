@@ -10,28 +10,30 @@ import java.math.BigDecimal;
 @Builder
 public class ProductRequest {
 
-    @NotBlank
+
     private String sku;
 
-    @NotBlank
+    @NotBlank(message = "{product.nameEn.required}")
+
     private String nameEn;
 
-    @NotBlank
+    @NotBlank(message = "{product.nameAr.required}")
     private String nameAr;
 
     private String description;
     private String descriptionAr;
 
-    @NotNull
+    @NotNull(message = "{product.price.required}")
     private BigDecimal price;
 
-    @NotNull
+    @NotNull(message = "{product.storePrice.required}")
     private BigDecimal storePrice;
 
 
     private String imageUrl;
 
-    @NotNull
+    @NotNull(message = "{product.stockQuantity.required}")
+
     private Integer stockQuantity;
 
     private Boolean published;
@@ -39,6 +41,6 @@ public class ProductRequest {
     private String companyEn;
     private String companyAr;
 
-    @NotNull
+    @NotNull(message = "{product.category.required}")
     private Long categoryId;
 }

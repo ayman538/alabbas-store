@@ -27,6 +27,7 @@ public class OrderItem {
     // 🔥 relation with product
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
+
     private Product product;
 
     // 🔥 snapshot

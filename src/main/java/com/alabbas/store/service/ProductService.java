@@ -13,6 +13,7 @@ import com.alabbas.store.entity.ReceivedProduct;
 import com.alabbas.store.exception.BusinessException;
 import com.alabbas.store.exception.ResourceNotFoundException;
 import com.alabbas.store.repository.CategoryRepository;
+import com.alabbas.store.repository.OrderItemRepository;
 import com.alabbas.store.repository.ProductRepository;
 import com.alabbas.store.repository.ReceivedProductRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,22 +40,32 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final ReceivedProductRepository receivedProductRepository;
+    private final OrderItemRepository orderItemRepository;
+
 
     @Value("${app.upload.images-path}")
     private String imagesPath;
 
     public ProductService(ProductRepository productRepository,
                           CategoryRepository categoryRepository,
-                          ReceivedProductRepository receivedProductRepository) {
+                          ReceivedProductRepository receivedProductRepository, OrderItemRepository orderItemRepository) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.receivedProductRepository = receivedProductRepository;
+        this.orderItemRepository = orderItemRepository;
     }
 
     public Product createProduct(ProductRequest  request) {
 
-        // 🔥 SKU duplicate validation
-        if (productRepository.existsBySkuIgnoreCase(request.getSku())) {
+        String sku = request.getSku();
+
+        if (sku != null && sku.isBlank()) {
+            sku = null;
+        } else if (sku != null) {
+            sku = sku.trim();
+        }
+
+        if (sku != null && productRepository.existsBySkuIgnoreCase(sku)) {
             throw new BusinessException("product.sku.exists");
         }
 
@@ -64,7 +75,7 @@ public class ProductService {
 
         // 🔥 build product
         Product product = Product.builder()
-                .sku(request.getSku())
+                .sku(sku)
                 .nameEn(request.getNameEn())
                 .nameAr(request.getNameAr())
                 .description(request.getDescription())
@@ -78,6 +89,10 @@ public class ProductService {
                 .companyEn(request.getCompanyEn())
                 .companyAr(request.getCompanyAr())
                 .build();
+
+        if (request.getSku() != null && request.getSku().isBlank()) {
+            request.setSku(null);
+        }
 
         return productRepository.save(product);
     }
@@ -93,6 +108,13 @@ public class ProductService {
     }
 
     public void deleteProduct(@PathVariable Long id) {
+
+        boolean usedInOrders = orderItemRepository.existsByProductId(id);
+        if (usedInOrders) {
+
+            throw new BusinessException("product.cannot.delete.used.in.orders");
+        }
+
         Product product = getProductById(id);
         productRepository.delete(product);
 
@@ -118,15 +140,25 @@ public class ProductService {
 
         Product existingProduct = getProductById(id);
 
-        if (!existingProduct.getSku().equalsIgnoreCase(request.getSku())
-                && productRepository.existsBySkuIgnoreCase(request.getSku())) {
+        String sku = request.getSku();
+
+        if (sku != null && sku.isBlank()) {
+            sku = null;
+        } else if (sku != null) {
+            sku = sku.trim();
+        }
+
+        if (sku != null
+                        && !sku.equalsIgnoreCase(existingProduct.getSku())
+                        && productRepository.existsBySkuIgnoreCase(sku)
+        ) {
             throw new BusinessException("product.sku.exists");
         }
 
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("category.not.found"));
 
-        existingProduct.setSku(request.getSku());
+        existingProduct.setSku(sku);
         existingProduct.setNameEn(request.getNameEn());
         existingProduct.setNameAr(request.getNameAr());
         existingProduct.setDescription(request.getDescription());
