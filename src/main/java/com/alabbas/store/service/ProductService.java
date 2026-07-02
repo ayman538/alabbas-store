@@ -28,6 +28,8 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -96,8 +98,8 @@ public class ProductService {
 
     }
     @Transactional(readOnly = true)
-    public Page<ReceivedProductsSummaryResponse> getReceivedProducts(Pageable pageable) {
-        return receivedProductRepository.findReceivedProductTransactions(pageable);
+    public Page<ReceivedProductsSummaryResponse> getReceivedProducts(LocalDateTime createdFrom , LocalDateTime createdTo , Pageable pageable) {
+        return receivedProductRepository.findReceivedProductTransactions(createdFrom, createdTo ,pageable);
     }
 
     @Transactional(readOnly = true)
